@@ -14,8 +14,8 @@
                     <v-text-field label="VIN#" v-model="inventory.vin"></v-text-field>
                     <v-text-field label="Model" v-model="inventory.model"></v-text-field>
                     <v-text-field label="Make" v-model="inventory.make"></v-text-field>
-                    <v-text-field label="Year" v-model="inventory.year"></v-text-field>
-                    <v-text-field label="MSRP" v-model="inventory.msrp"></v-text-field>
+                    <v-text-field label="Year" v-model="inventory.year" type="number"></v-text-field>
+                    <v-text-field label="MSRP" v-model="inventory.msrp" type="number"></v-text-field>
                     <v-text-field label="Status" v-model="inventory.status"></v-text-field>
                     <v-row>
                         <v-col cols="12" sm="6"><v-select :items="['Y', 'N']" label="Booked" v-model="inventory.booked"></v-select></v-col>
@@ -89,8 +89,12 @@
                     alert("Listed must be required")
                     return false
                 }
+                return true
             },
             saveInventory () {
+                this.inventory.year = Number(this.inventory.year)
+                this.inventory.msrp = Number(this.inventory.msrp)
+
                 if (!this.checkval() || !confirm("Do you want to save?")) {
                     return false
                 }

@@ -159,6 +159,7 @@ export default {
             ).then(result => {
                 if (result.status === 200) {
                     this.inventories = result.data
+                    this.filterInventories = this.inventories
                     this.delvins = []
                     alert('Deleted!')
                 }
