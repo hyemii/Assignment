@@ -1,5 +1,5 @@
 <template>
-    <div class="main" style="padding:1%">
+    <div class="main" style="padding:2%">
         <v-card>
             <v-card-text style="color: #fa8f1d">
                 <h1>Home</h1>

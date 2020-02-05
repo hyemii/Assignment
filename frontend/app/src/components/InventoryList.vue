@@ -7,18 +7,25 @@
                 </v-card-text>
             </v-card><br>
 
-            <v-row>
-                <v-col cols="12" sm="8">
-                    <v-card>
-                        <v-card-text>Filter</v-card-text>
-                    </v-card>
-                </v-col>
-                <v-col cols="12" sm="4" class="center">
-                    <v-card>
-                        <v-card-text><button>Update Filter</button></v-card-text>
-                    </v-card>
-                </v-col>
-            </v-row>
+            <div style="border: solid gainsboro 1px">
+                <v-row>
+                    <v-col cols="12" sm="2" style="margin: auto;">
+                        <div align="center">Filter</div>
+                    </v-col>
+                    <v-col cols="12" sm="7">
+                        <v-text-field label="Model" v-model="search.model" class="filter"></v-text-field>
+                        <v-text-field label="Make" v-model="search.make" class="filter"></v-text-field>
+                        <v-text-field label="Year" v-model="search.year" class="filter"></v-text-field>
+                        <v-text-field label="MSRP" v-model="search.msrp" class="filter"></v-text-field>
+                        <v-text-field label="Status" v-model="search.status" class="filter"></v-text-field>
+                        <v-select :items="['Y', 'N']" label="Booked" v-model="search.booked" clearable class="filter"></v-select>
+                        <v-select :items="['Y', 'N']" label="Listed" v-model="search.listed" clearable class="filter"></v-select>
+                    </v-col>
+                    <v-col cols="12" sm="3" class="center" style="margin: auto">
+                        <v-btn outlined rounded color="grey" @click="updateFilter">Update Filter</v-btn>
+                    </v-col>
+                </v-row>
+            </div>
 
             <div class="scroll">
                 <table class="table">
@@ -36,19 +43,24 @@
                         <th>Listed</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    <tr v-for="(inventory, index) in inventories" :key="index">
-                        <td><v-checkbox v-model="selected" :value="inventory.vin" color="orange"></v-checkbox></td>
+                    <tbody v-if="inventories.length > 0">
+                    <tr v-for="(inventory, index) in filterInventories" :key="index">
+                        <td><v-checkbox v-model="delvins" :value="inventory.vin" color="orange"></v-checkbox></td>
                         <td>{{ index + 1 }}</td>
                         <td>{{ inventory.vin }}</td>
                         <td>{{ inventory.model }}</td>
                         <td>{{ inventory.make }}</td>
                         <td>{{ inventory.year }}</td>
-                        <td>{{ inventory.msrp }}</td>
+                        <td>{{ inventory.msrp | currency}}</td>
                         <td>{{ inventory.status }}</td>
                         <td>{{ inventory.booked }}</td>
                         <td>{{ inventory.listed }}</td>
                     </tr>
+                    </tbody>
+                    <tbody v-if="inventories.length < 1 || filterInventories.length < 1">
+                        <td colspan="10" style="font-size: 2.5em; padding:5%">
+                            No Data
+                        </td>
                     </tbody>
                 </table>
             </div>
@@ -58,41 +70,54 @@
             <v-btn class="ma-2" outlined fab color="orange" v-on:click="deleteInventory">
                 <v-icon>mdi-minus</v-icon>
             </v-btn>
-            <v-btn class="ma-2" rounded outlined color="orange" large>Upload File</v-btn>
+
+            <UploadFile v-model="showUploadForm" />
         </div>
     </div>
 </template>
 
 <script>
 import AddDialog from '../components/AddDialog'
+import UploadFile from '../components/UploadFile'
 
 export default {
     name: "inventoryList",
     components: {
-        AddDialog
+        AddDialog,
+        UploadFile
     },
     data() {
         return {
             inventories: [],
-            selected: [],
-            showAddForm: false
+            filterInventories: [],
+            search: {
+                model: '',
+                make: '',
+                year: '',
+                msrp: '',
+                status: '',
+                booked: '',
+                listed: ''
+            },
+            delvins: [],
+            showAddForm: false,
+            showUploadForm: false,
+            updateFlag: false
         }
     },
     computed: {
         selectAll: {
             get: function () {
-                return this.inventories ? this.selected.length == this.inventories.length : false;
+                return this.inventories ? this.delvins.length == this.inventories.length : false;
             },
             set: function (value) {
-                var selected = [];
-
+                var delvins = [];
                 if (value) {
                     this.inventories.forEach(function (inventory) {
-                        selected.push(inventory.vin);
+                        delvins.push(inventory.vin);
                     });
                 }
-
-                this.selected = selected;
+                this.delvins = delvins;
             }
         }
     },
@@ -105,6 +130,7 @@ export default {
             ).then(result => {
                 if (result.status === 200) {
                     this.inventories = result.data
+                    this.filterInventories = this.inventories
                 }
             }).catch(reason => {
                 console.log('list error', reason)
@@ -112,34 +138,56 @@ export default {
             })
         },
         deleteInventory () {
-            if (this.selected.length < 1) {
+            if (this.delvins.length < 1) {
                 alert("Choose a list to delete")
                 return false
             }
 
             var msg = "Are you sure you want to delete?\n\n"
-            this.selected.forEach(function (select) {
-                msg = msg + 'VIN# = ' + select + '\n'
+            this.delvins.forEach(function (delvin) {
+                msg = msg + 'VIN# = ' + delvin + '\n'
             });
 
             if (!confirm(msg)) {
                 return false;
             }
+
             var urlVal = "http://localhost:8090"
 
-            console.log(this.selected)
-            var list = this.selected
-
             this.$http.delete(
-                urlVal + '/inventories', list
+                urlVal + '/inventories/' + this.delvins
             ).then(result => {
                 if (result.status === 200) {
+                    this.inventories = result.data
+                    this.delvins = []
                     alert('Deleted!')
                 }
             }).catch(reason => {
                 console.log('list error', reason)
                 alert('Fail!')
             })
+        },
+        updateFilter () {
+            if (typeof(this.search.booked) === 'undefined') {this.search.booked = ''}
+            if (typeof(this.search.listed) === 'undefined') {this.search.listed = ''}
+
+            if (!this.search) { this.filterInventories = this.inventories }
+            this.delvins = []
+            this.filterInventories = this.inventories.filter(inventory => {
+                return inventory.model.toLowerCase().includes(this.search.model.toLowerCase()) &&
+                        inventory.make.toLowerCase().includes(this.search.make.toLowerCase()) &&
+                        inventory.year.toString().includes(this.search.year.toString()) &&
+                        inventory.msrp.toString().includes(this.search.msrp.toString()) &&
+                        inventory.status.toLowerCase().includes(this.search.status.toLowerCase()) &&
+                        inventory.booked.includes(this.search.booked) &&
+                        inventory.listed.includes(this.search.listed)
+            })
+        }
+    },
+    filters: {
+        currency: function (value) {
+            var num = new Number(value)
+            return num.toFixed(0).replace(/(\d)(?=(\d{3})+(?:\.\d+)?$)/g, "$1,")
         }
     },
     created() {
@@ -151,6 +199,12 @@ export default {
 <style scoped>
 .center {
     text-align: center !important;
+}
+
+.filter {
+    width: 90px;
+    float: left;
+    margin-right: 2%;
 }
 
 .scroll {

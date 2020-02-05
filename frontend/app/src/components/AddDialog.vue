@@ -11,15 +11,15 @@
             </div>
             <v-card-text>
                 <v-container style="text-align: center">
-                    <v-text-field label="VIN#" v-model="inventory.vin" required></v-text-field>
-                    <v-text-field label="Model" v-model="inventory.model" required></v-text-field>
-                    <v-text-field label="Make" v-model="inventory.make" required></v-text-field>
-                    <v-text-field label="Year" v-model="inventory.year" required></v-text-field>
-                    <v-text-field label="MSRP" v-model="inventory.msrp" required></v-text-field>
-                    <v-text-field label="Status" v-model="inventory.status" required></v-text-field>
+                    <v-text-field label="VIN#" v-model="inventory.vin"></v-text-field>
+                    <v-text-field label="Model" v-model="inventory.model"></v-text-field>
+                    <v-text-field label="Make" v-model="inventory.make"></v-text-field>
+                    <v-text-field label="Year" v-model="inventory.year"></v-text-field>
+                    <v-text-field label="MSRP" v-model="inventory.msrp"></v-text-field>
+                    <v-text-field label="Status" v-model="inventory.status"></v-text-field>
                     <v-row>
-                        <v-col cols="12" sm="6"><v-select :items="['Y', 'N']" label="Booked" v-model="inventory.booked" required></v-select></v-col>
-                        <v-col cols="12" sm="6"><v-select :items="['Y', 'N']" label="Listed" v-model="inventory.listed" required></v-select></v-col>
+                        <v-col cols="12" sm="6"><v-select :items="['Y', 'N']" label="Booked" v-model="inventory.booked"></v-select></v-col>
+                        <v-col cols="12" sm="6"><v-select :items="['Y', 'N']" label="Listed" v-model="inventory.listed"></v-select></v-col>
                     </v-row>
                 </v-container>
             </v-card-text>
@@ -47,16 +47,54 @@
                     status: '',
                     booked: '',
                     listed: ''
-                }
+                },
+                vinRules: [
+                    v => !!v ||  'Vin is required'
+                ]
             }
         },
         methods: {
-            saveInventory () {
-                if (!confirm("Do you want to save?")) {
+            checkval () {
+                if (!this.inventory.vin) {
+                    alert("Vin must be required")
                     return false
                 }
 
-                // 저장
+                if (!this.inventory.model) {
+                    alert("Model must be required")
+                    return false
+                }
+
+                if (!this.inventory.make) {
+                    alert("Make must be required")
+                    return false
+                }
+
+                if (!this.inventory.year) {
+                    alert("Year must be required")
+                    return false
+                }
+
+                if (!this.inventory.msrp) {
+                    alert("MSRP must be required")
+                    return false
+                }
+
+                if (!this.inventory.booked) {
+                    alert("Booked must be required")
+                    return false
+                }
+
+                if (!this.inventory.listed) {
+                    alert("Listed must be required")
+                    return false
+                }
+            },
+            saveInventory () {
+                if (!this.checkval() || !confirm("Do you want to save?")) {
+                    return false
+                }
+
                 var urlVal = "http://localhost:8090"
 
                 this.$http.post(
