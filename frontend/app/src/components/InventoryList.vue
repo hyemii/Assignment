@@ -12,7 +12,7 @@
                     <v-col cols="12" sm="2" style="margin: auto;">
                         <div align="center">Filter</div>
                     </v-col>
-                    <v-col cols="12" sm="7">
+                    <v-col cols="12" sm="7" class="center">
                         <v-text-field label="Model" v-model="search.model" class="filter"></v-text-field>
                         <v-text-field label="Make" v-model="search.make" class="filter"></v-text-field>
                         <v-text-field label="Year" v-model="search.year" class="filter"></v-text-field>
@@ -205,6 +205,7 @@ export default {
 .filter {
     width: 90px;
     float: left;
+    margin-left: 2%;
     margin-right: 2%;
 }
 

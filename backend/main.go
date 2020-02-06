@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strings"
@@ -23,7 +24,7 @@ var inventories []Inventory
 func setupResponse(w *http.ResponseWriter, r *http.Request) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, X-Requested-With")
 	(*w).Header().Set("Content-Type", "application/json")
 }
 
@@ -36,6 +37,15 @@ func createInventory(w http.ResponseWriter, r *http.Request) {
 	setupResponse(&w, r)
 	var inventory Inventory
 	_ = json.NewDecoder(r.Body).Decode(&inventory)
+
+	for _ , Inventory := range inventories {
+		err := Inventory.Vin == inventory.Vin
+		if err {
+			fmt.Println("Vin confirm error")
+			return
+		}
+	}
+
 	inventories = append(inventories, inventory)
 	json.NewEncoder(w).Encode(&inventory)
 }
@@ -55,9 +65,9 @@ func deleteInventories(w http.ResponseWriter, r *http.Request) {
 		arrDelVins = strings.Split(delvins, ",")
 	}
 
-	for index, Inventory := range inventories {
+	for index, inventory := range inventories {
 		for _ , delvin := range arrDelVins {
-			if Inventory.Vin == delvin {
+			if inventory.Vin == delvin {
 				inventories = append(inventories[:index], inventories[index+1:]...)
 				break
 			}

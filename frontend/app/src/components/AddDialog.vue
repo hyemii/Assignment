@@ -11,7 +11,7 @@
             </div>
             <v-card-text>
                 <v-container style="text-align: center">
-                    <v-text-field label="VIN#" v-model="inventory.vin"></v-text-field>
+                    <v-text-field label="VIN#" v-model="inventory.vin" ref="vin"></v-text-field>
                     <v-text-field label="Model" v-model="inventory.model"></v-text-field>
                     <v-text-field label="Make" v-model="inventory.make"></v-text-field>
                     <v-text-field label="Year" v-model="inventory.year" type="number"></v-text-field>
@@ -105,15 +105,18 @@
                     urlVal + '/inventories', this.inventory
                 ).then(result => {
                     if (result.status === 200) {
-                        alert("Saved!")
+                        if (result.data === '' || result.data === null) {
+                            alert("Vin Confirm Error")
+                        } else {
+                            alert("Saved!")
+                            this.dialog = false
+                            this.$router.go()
+                        }
                     }
                 }).catch(reason => {
                     console.log('post error', reason)
                     alert('Fail!')
                 })
-
-                this.dialog = false
-                this.$router.go()
             }
         }
     }
